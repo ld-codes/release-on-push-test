@@ -28,11 +28,11 @@ jobs:
           if [ "$pr_branch" = "${{ env.develop_branch }}" ] && [ "${{ github.base_ref }}" = "${{ env.main_branch }}" ]; then
             label="release"
           elif echo "$pr_title" | grep -iq "BREAKING CHANGE" || echo "$pr_body" | grep -iq "BREAKING CHANGE"; then
-            label="release:major"
+            label="breaking-change"
           elif echo "$pr_title" | grep -iq "^feat"; then
-            label="release:minor"
+            label="feat"
           elif echo "$pr_title" | grep -iq "^fix" || echo "$pr_title" | grep -iq "^bugfix"; then
-            label="release:patch"
+            label="fix"
           fi
 
           echo "Label: $label"

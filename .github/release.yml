@@ -6,13 +6,13 @@ changelog:
   categories:
     - title: Breaking Changes 🔥
       labels:
-        - release:major
+        - breaking-change
     - title: Exciting New Features ✨
       labels:
-        - release:minor
+        - feat
     - title: Bugfixes 🐛
       labels:
-        - release:patch
+        - fix
     - title: Other Changes 🔄
       labels:
         - "*"
