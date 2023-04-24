@@ -1,0 +1,50 @@
+on:
+  pull_request:
+    types: [opened]
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get label
+        id: label
+        if: github.event.pull_request.base.ref == ${{ env.develop_branch }} || github.event.pull_request.base.ref == ${{ env.main_branch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_branch=$(jq -r ".head.ref" "$GITHUB_EVENT_PATH")
+          pr_title=$(jq -r ".pull_request.title" "$GITHUB_EVENT_PATH")
+          pr_body=$(jq -r ".pull_request.body" "$GITHUB_EVENT_PATH")
+
+          if [ "$pr_branch" = "${{ env.develop_branch }}" ] && [ "$GITHUB_BASE_REF" = "${{ env.main_branch }}" ]; then
+            label="release"
+          elif echo "$pr_title" | grep -iq "BREAKING CHANGE" || echo "$pr_body" | grep -iq "BREAKING CHANGE"; then
+            label="release:major"
+          elif echo "$pr_title" | grep -iq "^feat"; then
+            label="release:minor"
+          elif echo "$pr_title" | grep -iq "^fix" || echo "$pr_title" | grep -iq "^bugfix"; then
+            label="release:patch"
+          else
+            label=""
+          fi
+
+          echo "::set-output name=label::$label"
+
+      - name: Assign label to PR
+        if: (github.event.pull_request.base.ref == ${{ env.develop_branch }} || github.event.pull_request.base.ref == ${{ env.main_branch }}) && ${{ steps.label.outputs.label != '' }}
+        uses: actions/github-script@v4
+        with:
+          script: |
+            github.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['norelease']
+            })
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+    env:
+      develop_branch: "develop"
+      main_branch: "main"
