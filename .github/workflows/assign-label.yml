@@ -1,12 +1,12 @@
 on:
   pull_request:
-    types: [opened]
+    types: [opened, reopened]
 jobs:
-  label:
+  assign-label:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Get label
         id: label
@@ -14,11 +14,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pr_branch=$(jq -r ".head.ref" "$GITHUB_EVENT_PATH")
+          pr_branch=${{ github.head_ref || github.ref_name }}
           pr_title=$(jq -r ".pull_request.title" "$GITHUB_EVENT_PATH")
           pr_body=$(jq -r ".pull_request.body" "$GITHUB_EVENT_PATH")
 
-          if [ "$pr_branch" = "${{ env.develop_branch }}" ] && [ "$GITHUB_BASE_REF" = "${{ env.main_branch }}" ]; then
+          echo "pr_branch: $pr_branch"
+          echo "env.develop_branch: ${{ env.develop_branch }}"
+          echo "github.base_ref: ${{ github.base_ref }}"
+          echo "env.main_branch: ${{ env.main_branch }}"
+
+
+          label="triage"
+          if [ "$pr_branch" = "${{ env.develop_branch }}" ] && [ "${{ github.base_ref }}" = "${{ env.main_branch }}" ]; then
             label="release"
           elif echo "$pr_title" | grep -iq "BREAKING CHANGE" || echo "$pr_body" | grep -iq "BREAKING CHANGE"; then
             label="release:major"
@@ -26,14 +33,16 @@ jobs:
             label="release:minor"
           elif echo "$pr_title" | grep -iq "^fix" || echo "$pr_title" | grep -iq "^bugfix"; then
             label="release:patch"
-          else
-            label=""
           fi
 
-          echo "::set-output name=label::$label"
+          echo "Label: $label"
+
+          echo "label=$label" >> "$GITHUB_OUTPUT"
+
+          echo "GITHUB_OUTPUT: $GITHUB_OUTPUT"
 
       - name: Assign label to PR
-        if: (github.event.pull_request.base.ref == ${{ env.develop_branch }} || github.event.pull_request.base.ref == ${{ env.main_branch }}) && ${{ steps.label.outputs.label != '' }}
+        if: ${{ steps.label.outputs.label }} != '' && ${{ steps.label.outputs.label }} != null
         uses: actions/github-script@v4
         with:
           script: |
@@ -41,9 +50,8 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              labels: [${{ steps.label.outputs.label }}]
+              labels: [ "${{ steps.label.outputs.label }}" ]
             })
-          token: ${{ secrets.GITHUB_TOKEN }}
 
     env:
       develop_branch: "develop"
