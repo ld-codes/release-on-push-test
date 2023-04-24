@@ -2,11 +2,11 @@ on:
   pull_request:
     types: [opened]
 jobs:
-  label:
+  assign-label:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Get label
         id: label
@@ -30,7 +30,9 @@ jobs:
             label=""
           fi
 
-          echo "::set-output name=label::$label"
+          echo "label=$label" >> $GITHUB_OUTPUT
+
+          echo $label
 
       - name: Assign label to PR
         if: (github.event.pull_request.base.ref == ${{ env.develop_branch }} || github.event.pull_request.base.ref == ${{ env.main_branch }}) && ${{ steps.label.outputs.label != '' }}
@@ -43,7 +45,6 @@ jobs:
               issue_number: context.issue.number,
               labels: [${{ steps.label.outputs.label }}]
             })
-          token: ${{ secrets.GITHUB_TOKEN }}
 
     env:
       develop_branch: "develop"
