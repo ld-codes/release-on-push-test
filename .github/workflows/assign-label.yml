@@ -16,7 +16,7 @@ jobs:
         run: |
           echo ${{ env.develop_branch }}
           echo ${{ env.main_branch }}
-          pr_branch=$(jq -r ".head.ref" "$GITHUB_EVENT_PATH")
+          pr_branch=$GITHUB_REF_NAME
           pr_title=$(jq -r ".pull_request.title" "$GITHUB_EVENT_PATH")
           pr_body=$(jq -r ".pull_request.body" "$GITHUB_EVENT_PATH")
           echo $pr_branch
@@ -44,7 +44,6 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            echo "Assign '${{ steps.label.outputs.label }}' to PR"
             github.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
