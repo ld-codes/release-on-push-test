@@ -14,17 +14,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo ${{ env.develop_branch }}
-          echo ${{ env.main_branch }}
           pr_branch=${{ github.head_ref || github.ref_name }}
           pr_title=$(jq -r ".pull_request.title" "$GITHUB_EVENT_PATH")
           pr_body=$(jq -r ".pull_request.body" "$GITHUB_EVENT_PATH")
-          echo $pr_branch
-          echo $pr_title
-          echo $pr_body
 
           label=""
-          if [ "$pr_branch" = "${{ env.develop_branch }}" ] && [ "$GITHUB_BASE_REF" = "${{ env.main_branch }}" ]; then
+          if [ "$pr_branch" = "${{ env.develop_branch }}" ] && [ "{{ github.base_ref }}" = "${{ env.main_branch }}" ]; then
             label="release"
           elif echo "$pr_title" | grep -iq "BREAKING CHANGE" || echo "$pr_body" | grep -iq "BREAKING CHANGE"; then
             label="release:major"
@@ -39,7 +34,7 @@ jobs:
           echo "label=$label" >> $GITHUB_OUTPUT
 
       - name: Assign label to PR
-        if: (github.event.pull_request.base.ref == ${{ env.develop_branch }} || github.event.pull_request.base.ref == ${{ env.main_branch }}) && ${{ steps.label.outputs.label != '' }}
+        if: (github.event.pull_request.base.ref == ${{ env.develop_branch }} || github.event.pull_request.base.ref == ${{ env.main_branch }}) && ${{ steps.label.outputs.label }} != ''
         uses: actions/github-script@v4
         with:
           script: |
