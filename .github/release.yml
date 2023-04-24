@@ -1,0 +1,17 @@
+changelog:
+  exclude:
+    labels:
+      - norelease
+  categories:
+    - title: Breaking Changes 🔥
+      labels:
+        - release:major
+    - title: Exciting New Features ✨
+      labels:
+        - release:minor
+    - title: Bugfixes 🐛
+      labels:
+        - release:patch
+    - title: Other Changes 🔄
+      labels:
+        - "*"
