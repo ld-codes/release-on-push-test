@@ -2,6 +2,7 @@ changelog:
   exclude:
     labels:
       - norelease
+      - release
   categories:
     - title: Breaking Changes 🔥
       labels:
