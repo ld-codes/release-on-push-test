@@ -42,7 +42,7 @@ jobs:
           echo "GITHUB_OUTPUT: $GITHUB_OUTPUT"
 
       - name: Assign label to PR
-        if: "${{ steps.label.outputs.label }}" != ''
+        if: ${{ steps.label.outputs.label }} != '' && ${{ steps.label.outputs.label }} != null
         uses: actions/github-script@v4
         with:
           script: |
