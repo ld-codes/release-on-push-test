@@ -39,6 +39,7 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
+            echo "Assign '${{ steps.label.outputs.label }}' to PR"
             github.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
