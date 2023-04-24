@@ -42,16 +42,18 @@ jobs:
           echo "GITHUB_OUTPUT: $GITHUB_OUTPUT"
 
       - name: Assign label to PR
-        if: ${{ steps.label.outputs.label }} != ''
-        uses: actions/github-script@v4
-        with:
-          script: |
-            github.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              labels: [${{ steps.label.outputs.label }}]
-            })
+        # if: ${{ steps.label.outputs.label }} != '' && ${{ steps.label.outputs.label }} != null
+        # uses: actions/github-script@v4
+        # with:
+        #   script: |
+        #     github.issues.addLabels({
+        #       owner: context.repo.owner,
+        #       repo: context.repo.repo,
+        #       issue_number: context.issue.number,
+        #       labels: [${{ steps.label.outputs.label }}]
+        #     })
+        run: |
+          echo "Label: ${{steps.label.outputs.label}}"
 
     env:
       develop_branch: "develop"
