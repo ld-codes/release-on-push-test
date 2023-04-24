@@ -24,7 +24,7 @@ jobs:
           echo "env.main_branch: ${{ env.main_branch }}"
 
 
-          label=""
+          label="triage"
           if [ "$pr_branch" = "${{ env.develop_branch }}" ] && [ "${{ github.base_ref }}" = "${{ env.main_branch }}" ]; then
             label="release"
           elif echo "$pr_title" | grep -iq "BREAKING CHANGE" || echo "$pr_body" | grep -iq "BREAKING CHANGE"; then
