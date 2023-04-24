@@ -16,13 +16,14 @@ jobs:
         run: |
           echo ${{ env.develop_branch }}
           echo ${{ env.main_branch }}
-          pr_branch=$GITHUB_REF_NAME
+          pr_branch=${{ github.head_ref || github.ref_name }}
           pr_title=$(jq -r ".pull_request.title" "$GITHUB_EVENT_PATH")
           pr_body=$(jq -r ".pull_request.body" "$GITHUB_EVENT_PATH")
           echo $pr_branch
           echo $pr_title
           echo $pr_body
 
+          label=""
           if [ "$pr_branch" = "${{ env.develop_branch }}" ] && [ "$GITHUB_BASE_REF" = "${{ env.main_branch }}" ]; then
             label="release"
           elif echo "$pr_title" | grep -iq "BREAKING CHANGE" || echo "$pr_body" | grep -iq "BREAKING CHANGE"; then
@@ -31,13 +32,11 @@ jobs:
             label="release:minor"
           elif echo "$pr_title" | grep -iq "^fix" || echo "$pr_title" | grep -iq "^bugfix"; then
             label="release:patch"
-          else
-            label=""
           fi
 
-          echo "label=$label" >> $GITHUB_OUTPUT
-
           echo $label
+
+          echo "label=$label" >> $GITHUB_OUTPUT
 
       - name: Assign label to PR
         if: (github.event.pull_request.base.ref == ${{ env.develop_branch }} || github.event.pull_request.base.ref == ${{ env.main_branch }}) && ${{ steps.label.outputs.label != '' }}
